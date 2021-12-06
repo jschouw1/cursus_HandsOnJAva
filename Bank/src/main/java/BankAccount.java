@@ -1,24 +1,26 @@
 public class BankAccount {
 
-    int    accountNumber;
-    int    balance = 0;
-    double interestPos = 0.1;
-    double interestNeg = 9.2;
+    private int    accountNumber;
+    private int    balance;
+    private double interestPos = 0.01;
+    private double interestNeg = 0.092;
+
+    public BankAccount(int accountNumber) {
+        this.accountNumber = accountNumber;
+        this.balance = 0;
+    }
+
+    public BankAccount(int accountNumber, double balance) {
+        this.accountNumber = accountNumber;
+        this.balance = (int)(balance*100);
+    }
 
     public int getAccountNumber() {
         return accountNumber;
     }
 
-    public void setAccountNumber(int accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public int getBalance() {
-        return balance;
-    }
-
-    public void setBalance(int balance) {
-        this.balance = balance;
+    public double getBalance() {
+        return (double)balance/100;
     }
 
     public double getInterestPos() {
@@ -37,35 +39,20 @@ public class BankAccount {
         this.interestNeg = interestNeg;
     }
 
-    public BankAccount(int accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public BankAccount(int accountNumber, double balance) {
-        this.accountNumber = accountNumber;
-        this.balance = (int)(balance*100);
-    }
-
     public void Deposit(double credit) {
-        balance = getBalance() + (int)(credit*100);
-        setBalance(balance);
+        balance += (int)(credit*100);
     }
 
     public void Withdraw(double debit) {
-        balance = getBalance() + (int)(debit*100);
-        setBalance(balance);
+        balance -= (int)(debit*100);
     }
 
-    public int Interest(){
-        double balance = getBalance();
-
-        if (balance >= 0){
-            balance = balance * interestPos;
+    public void Interest(){
+        if (this.balance >= 0){
+            this.balance += (int)((double)this.balance * interestPos);
         } else {
-            balance = balance * interestNeg;
+            this.balance += (int)((double)this.balance * interestNeg);
         }
-
-        return (int)(balance * 100);
     }
 
     public static void main(String[] args) {
