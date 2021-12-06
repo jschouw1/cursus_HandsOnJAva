@@ -1,7 +1,7 @@
 public class BankAccount {
 
     int accountNumber;
-    double balance = 0;
+    int balance = 0;
 
     public int getAccountNumber() {
         return accountNumber;
@@ -11,11 +11,11 @@ public class BankAccount {
         this.accountNumber = accountNumber;
     }
 
-    public double getBalance() {
+    public int getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(int balance) {
         this.balance = balance;
     }
 
@@ -25,16 +25,16 @@ public class BankAccount {
 
     public BankAccount(int accountNumber, double balance) {
         this.accountNumber = accountNumber;
-        this.balance = balance;
+        this.balance = (int)(balance*100);
     }
 
     public void Deposit(double credit) {
-        balance = getBalance() + credit;
+        balance = getBalance() + (int)(credit*100);
         setBalance(balance);
     }
 
     public void Withdraw(double debit) {
-        balance = getBalance() + debit;
+        balance = getBalance() + (int)(debit*100);
         setBalance(balance);
     }
 
