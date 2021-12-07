@@ -1,4 +1,6 @@
-public class BankAccount {
+package Bank;
+
+class BankAccount {
 
     private int    accountNumber;
     private int    balance;
@@ -23,31 +25,23 @@ public class BankAccount {
         return (double)balance/100;
     }
 
-    public double getInterestPos() {
-        return interestPos;
-    }
-
     public void setInterestPos(double interestPos) {
         this.interestPos = interestPos;
-    }
-
-    public double getInterestNeg() {
-        return interestNeg;
     }
 
     public void setInterestNeg(double interestNeg) {
         this.interestNeg = interestNeg;
     }
 
-    public void Deposit(double credit) {
+    public void deposit(double credit) {
         balance += (int)(credit*100);
     }
 
-    public void Withdraw(double debit) {
+    public void withdraw(double debit) {
         balance -= (int)(debit*100);
     }
 
-    public void Interest(){
+    public void interest(){
         if (this.balance >= 0){
             this.balance += (int)((double)this.balance * interestPos);
         } else {
