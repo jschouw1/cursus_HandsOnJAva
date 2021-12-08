@@ -1,56 +1,64 @@
 package Bank;
 
-import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Bank {
 
-    static final int MAXACCOUNTS = 10;
     private static int accountNumberGenerator = 100;
-    private int baIndex = 0;
-    private BankAccount[] bankAccounts = new BankAccount[MAXACCOUNTS];
+    private List<BankAccount> bankAccounts = new LinkedList<>();
 
-    public int addBankAccount(double balance) {
-        BankAccount bankAccount;
+
+    public int addCheckingAccount(double balance) {
+        CheckingAccount checkingAccount;
         int accountNumber = accountNumberGenerator++;
         if (balance == 0.00) {
-            bankAccount = new BankAccount(accountNumber);
+            checkingAccount = new CheckingAccount(accountNumber);
         } else {
-            bankAccount = new BankAccount(accountNumber, balance);
+            checkingAccount = new CheckingAccount(accountNumber, balance);
         }
-        bankAccounts[baIndex] = bankAccount;
-        baIndex++;
+        bankAccounts.add(checkingAccount);
 
-        return bankAccount.getAccountNumber();
+        return checkingAccount.getAccountNumber();
+    }
+
+    public int addSavingsAccount(double balance) throws SavingsAccountException {
+        SavingsAccount savingsAccount;
+        int accountNumber = accountNumberGenerator++;
+        if (balance == 0.00) {
+            savingsAccount = new SavingsAccount(accountNumber);
+        } else {
+            savingsAccount = new SavingsAccount(accountNumber, balance);
+        }
+        bankAccounts.add(savingsAccount);
+
+        return savingsAccount.getAccountNumber();
     }
 
     public double totalBalance() {
         int totalBalance = 0;
         for (BankAccount bankAccount : bankAccounts) {
-            if (bankAccount != null) {
-                totalBalance += (bankAccount.getBalance() * 100);
-            }
+            totalBalance += (bankAccount.getBalance() * 100);
         }
         return (double) totalBalance / 100;
     }
 
-    public void interest() {
+    public void interest() throws BankAccountException {
         for (BankAccount bankAccount : bankAccounts) {
-            if (bankAccount != null) {
-                bankAccount.interest();
-            }
+            bankAccount.interest();
         }
     }
 
     public BankAccount findAccount(int accountNumber) throws BankException {
         for (BankAccount bankAccount : bankAccounts) {
-            if (bankAccount != null && bankAccount.getAccountNumber() == accountNumber) {
+            if (bankAccount.getAccountNumber() == accountNumber) {
                 return bankAccount;
             }
         }
-        throw new BankException("No account found for account number ".concat(String.valueOf(accountNumber)).concat("."));
+        throw new BankException(String.format("No account found for account number %s.", String.valueOf(accountNumber)));
     }
 
-    public void transfer(int accountNumberFrom, int accountNumberTo, double amount) throws BankException {
+    public void transfer(int accountNumberFrom, int accountNumberTo, double amount) throws BankException, SavingsAccountException {
         BankAccount accountFrom = findAccount(accountNumberFrom);
         BankAccount accountTo = findAccount(accountNumberTo);
 
@@ -66,28 +74,26 @@ public class Bank {
         BankAccount removeAccount = findAccount(accountNumber);
 
         if (removeAccount.getBalance() != 0) {
-            throw new BankException("Cannot remove account with non-zero balance. Balance of account ".concat(String.valueOf(removeAccount.getAccountNumber()).concat(" is ").concat(String.valueOf(removeAccount.getBalance()).concat("."))));
+            throw new BankException(String.format("Cannot remove account with non-zero balance. Balance of account %s is %s.", String.valueOf(removeAccount.getAccountNumber()), String.valueOf(removeAccount.getBalance())));
         }
 
-        for (int i = 0; i < bankAccounts.length; i++) {
-            if (bankAccounts[i].getAccountNumber() == removeAccount.getAccountNumber()) {
-                bankAccounts[i] = null;
-                baIndex--;
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            if (bankAccounts.get(i).getAccountNumber() == removeAccount.getAccountNumber()) {
+                bankAccounts.remove(i);
                 break;
             }
         }
     }
 
-    public void removeAccount(int accountNumberRemove, int accountNumberTo) throws BankException {
+    public void removeAccount(int accountNumberRemove, int accountNumberTo) throws BankException, SavingsAccountException {
         BankAccount removeAccount = findAccount(accountNumberRemove);
         BankAccount toAccount = findAccount(accountNumberTo);
 
         transfer(removeAccount.getAccountNumber(), toAccount.getAccountNumber(), removeAccount.getBalance());
 
-        for (int i = 0; i < bankAccounts.length; i++) {
-            if (bankAccounts[i].getAccountNumber() == removeAccount.getAccountNumber()) {
-                bankAccounts[i] = null;
-                baIndex--;
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            if (bankAccounts.get(i).getAccountNumber() == removeAccount.getAccountNumber()) {
+                bankAccounts.remove(i);
                 break;
             }
         }
@@ -96,16 +102,16 @@ public class Bank {
     public int[] findAllNegativeAccounts() {
         int count = 0;
 
-        for (int i = 0; i < baIndex; i++) {
-            if (bankAccounts[i].getBalance() < 0) {
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            if (bankAccounts.get(i).getBalance() < 0) {
                 count++;
             }
         }
         int[] negativeBalanceAccountNumbers = new int[count];
         int index = 0;
 
-        for (int i = 0; i < baIndex; i++) {
-            var bankAccount = bankAccounts[i];
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            var bankAccount = bankAccounts.get(i);
             if (bankAccount.getBalance() < 0) {
                 negativeBalanceAccountNumbers[index] = bankAccount.getAccountNumber();
                 index++;
@@ -118,15 +124,15 @@ public class Bank {
     public int[] findMostAverageAccounts() {
         double currentBest = Double.MAX_VALUE;
         double differenceFromAverage;
-        double averageBalance = totalBalance() / (baIndex);
-        int[] mostAverageAccountNumbers = new int[baIndex];
+        double averageBalance = totalBalance() / (bankAccounts.size());
+        int[] mostAverageAccountNumbers = new int[bankAccounts.size()];
         int index = 0;
 
-        for (int i = 0; i < baIndex; i++) {
-            differenceFromAverage = Math.abs(bankAccounts[i].getBalance() - averageBalance);
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            differenceFromAverage = Math.abs(bankAccounts.get(i).getBalance() - averageBalance);
 
             if (differenceFromAverage == currentBest) {
-                mostAverageAccountNumbers[index] = bankAccounts[i].getAccountNumber();
+                mostAverageAccountNumbers[index] = bankAccounts.get(i).getAccountNumber();
                 index++;
             } else if (currentBest > differenceFromAverage) {
                 for (int j = 0; j < index; j++) {
@@ -134,7 +140,7 @@ public class Bank {
                 }
                 index = 0;
                 currentBest = differenceFromAverage;
-                mostAverageAccountNumbers[index] = bankAccounts[i].getAccountNumber();
+                mostAverageAccountNumbers[index] = bankAccounts.get(i).getAccountNumber();
                 index++;
             }
 
@@ -155,66 +161,66 @@ public class Bank {
     }
 
     public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Bank app");
-        BankAccount bankAccount = new BankAccount(1);
-        bankAccount.deposit(20.01);
-        System.out.println(bankAccount.getAccountNumber());
-        System.out.println(bankAccount.getBalance());
-        bankAccount.withdraw(11.99);
-        System.out.println(bankAccount.getAccountNumber());
-        System.out.println(bankAccount.getBalance());
-        Bank bank = new Bank();
-        int accountNumber = bank.addBankAccount(1000.05);
-        System.out.println("-----Account 1-----");
-        System.out.println(accountNumber);
-        BankAccount foundAccount = bank.findAccount(accountNumber);
-        System.out.println(foundAccount.getBalance());
-        int accountNumber2 = bank.addBankAccount(-100.05);
-        System.out.println("-----Account 2-----");
-        System.out.println(accountNumber2);
-        BankAccount foundAccount2 = bank.findAccount(accountNumber2);
-        System.out.println(foundAccount2.getBalance());
-        bank.interest();
-        System.out.println("-----RENTE-----");
-        System.out.println("-----Account 1-----");
-        System.out.println(accountNumber);
-        System.out.println(foundAccount.getBalance());
-        System.out.println("-----Account 2-----");
-        System.out.println(accountNumber2);
-        System.out.println(foundAccount2.getBalance());
-        System.out.println("-----Totaal van accounts-----");
-        System.out.println(bank.totalBalance());
-        System.out.println("-----150.76 van account 1 naar 2-----");
-        bank.transfer(accountNumber, accountNumber2, 150.76);
-        System.out.println("-----Account 1-----");
-        System.out.println(accountNumber);
-        System.out.println(foundAccount.getBalance());
-        System.out.println("-----Account 2-----");
-        System.out.println(accountNumber2);
-        System.out.println(foundAccount2.getBalance());
-        System.out.println("-----Totaal van accounts-----");
-        System.out.println(bank.totalBalance());
-        System.out.println("-----Verwijderen Account 2, geld naar account 1-----");
-        bank.removeAccount(accountNumber2, accountNumber);
-        if (bank.findAccount(accountNumber2) == null) {
-            System.out.println("Account 2 succesvol verwijderd.");
-        } else {
-            System.out.println("Verwijderen account 2 niet succesvol.");
-        }
-        System.out.println("-----Account 1-----");
-        System.out.println(accountNumber);
-        System.out.println(foundAccount.getBalance());
-        System.out.println("-----Totaal van accounts-----");
-        System.out.println(bank.totalBalance());
-        System.out.println("-----Verwijderen Account 1, zonder transfer-----");
-        bank.removeAccount(accountNumber);
-        if (bank.findAccount(accountNumber) == null) {
-            System.out.println("Account 1 succesvol verwijderd.");
-        } else {
-            System.out.println("Verwijderen account 1 niet succesvol.");
-        }
+//        Scanner scanner = new Scanner(System.in);
+//
+//        System.out.println("Bank app");
+//        BankAccount bankAccount = new BankAccount(1);
+//        bankAccount.deposit(20.01);
+//        System.out.println(bankAccount.getAccountNumber());
+//        System.out.println(bankAccount.getBalance());
+//        bankAccount.withdraw(11.99);
+//        System.out.println(bankAccount.getAccountNumber());
+//        System.out.println(bankAccount.getBalance());
+//        Bank bank = new Bank();
+//        int accountNumber = bank.addCheckingAccount(1000.05);
+//        System.out.println("-----Account 1-----");
+//        System.out.println(accountNumber);
+//        BankAccount foundAccount = bank.findAccount(accountNumber);
+//        System.out.println(foundAccount.getBalance());
+//        int accountNumber2 = bank.addCheckingAccount(-100.05);
+//        System.out.println("-----Account 2-----");
+//        System.out.println(accountNumber2);
+//        BankAccount foundAccount2 = bank.findAccount(accountNumber2);
+//        System.out.println(foundAccount2.getBalance());
+//        bank.interest();
+//        System.out.println("-----RENTE-----");
+//        System.out.println("-----Account 1-----");
+//        System.out.println(accountNumber);
+//        System.out.println(foundAccount.getBalance());
+//        System.out.println("-----Account 2-----");
+//        System.out.println(accountNumber2);
+//        System.out.println(foundAccount2.getBalance());
+//        System.out.println("-----Totaal van accounts-----");
+//        System.out.println(bank.totalBalance());
+//        System.out.println("-----150.76 van account 1 naar 2-----");
+//        bank.transfer(accountNumber, accountNumber2, 150.76);
+//        System.out.println("-----Account 1-----");
+//        System.out.println(accountNumber);
+//        System.out.println(foundAccount.getBalance());
+//        System.out.println("-----Account 2-----");
+//        System.out.println(accountNumber2);
+//        System.out.println(foundAccount2.getBalance());
+//        System.out.println("-----Totaal van accounts-----");
+//        System.out.println(bank.totalBalance());
+//        System.out.println("-----Verwijderen Account 2, geld naar account 1-----");
+//        bank.removeAccount(accountNumber2, accountNumber);
+//        if (bank.findAccount(accountNumber2) == null) {
+//            System.out.println("Account 2 succesvol verwijderd.");
+//        } else {
+//            System.out.println("Verwijderen account 2 niet succesvol.");
+//        }
+//        System.out.println("-----Account 1-----");
+//        System.out.println(accountNumber);
+//        System.out.println(foundAccount.getBalance());
+//        System.out.println("-----Totaal van accounts-----");
+//        System.out.println(bank.totalBalance());
+//        System.out.println("-----Verwijderen Account 1, zonder transfer-----");
+//        bank.removeAccount(accountNumber);
+//        if (bank.findAccount(accountNumber) == null) {
+//            System.out.println("Account 1 succesvol verwijderd.");
+//        } else {
+//            System.out.println("Verwijderen account 1 niet succesvol.");
+//        }
 
 
 
@@ -247,10 +253,5 @@ public class Bank {
 //        }
     }
 
-    public class BankException extends Exception {
 
-        public BankException(String message) {
-            super(message);
-        }
-    }
 }

@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class BankTest {
     Bank sut;
 
@@ -19,7 +20,7 @@ public class BankTest {
 
     @Test
     public void findAccount_nonExistingAccountNumber_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
+        Throwable exception = assertThrows(BankException.class, () -> {
             sut.findAccount(100);
             }
         );
@@ -29,8 +30,8 @@ public class BankTest {
 
     @Test
     public void transfer_nonExistingAccount_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
-                    sut.addBankAccount(200);
+        Throwable exception = assertThrows(BankException.class, () -> {
+                    sut.addCheckingAccount(200);
                     sut.transfer(100, 101, 50);
                 }
         );
@@ -40,8 +41,8 @@ public class BankTest {
 
     @Test
     public void transfer_sameAccountNumbers_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
-            int accountNumber = sut.addBankAccount(200);
+        Throwable exception = assertThrows(BankException.class, () -> {
+            int accountNumber = sut.addCheckingAccount(200);
             sut.transfer(accountNumber, accountNumber, 50);
             }
         );
@@ -52,8 +53,8 @@ public class BankTest {
     @Test
     public void removeAccount_accountNumberStillHoldingCredit_Exception() {
         AtomicInteger accountNumber = new AtomicInteger();
-        Throwable exception = assertThrows(Exception.class, () -> {
-            accountNumber.set(sut.addBankAccount(200));
+        Throwable exception = assertThrows(BankException.class, () -> {
+            accountNumber.set(sut.addCheckingAccount(200));
             sut.removeAccount(accountNumber.get());
             }
         );
@@ -63,8 +64,8 @@ public class BankTest {
 
     @Test
     public void removeAccount_nonExistingAccount_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
-            sut.addBankAccount(200);
+        Throwable exception = assertThrows(BankException.class, () -> {
+            sut.addCheckingAccount(200);
             sut.removeAccount(101);
             }
         );
@@ -74,8 +75,8 @@ public class BankTest {
 
     @Test
     public void removeAccount_nonExistingAccountToTransferTo_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
-            int accountNumber = sut.addBankAccount(200);
+        Throwable exception = assertThrows(BankException.class, () -> {
+            int accountNumber = sut.addCheckingAccount(200);
             sut.removeAccount(accountNumber, 101);
             }
         );
@@ -85,9 +86,9 @@ public class BankTest {
 
     @Test
     public void removeAccount_transferToSameAccount_Exception() {
-        Throwable exception = assertThrows(Exception.class, () -> {
-            int accountNumber1 = sut.addBankAccount(200);
-            sut.addBankAccount(200);
+        Throwable exception = assertThrows(BankException.class, () -> {
+            int accountNumber1 = sut.addCheckingAccount(200);
+            sut.addCheckingAccount(200);
             sut.removeAccount(accountNumber1, accountNumber1);
             }
         );
@@ -97,54 +98,54 @@ public class BankTest {
 
     @Test
     public void findAllNegativeAccountNumbers_with1negativeBalance_returnsOneAccount() {
-        int accountNumber = (sut.addBankAccount(-1));
-        sut.addBankAccount(1);
+        int accountNumber = (sut.addCheckingAccount(-1));
+        sut.addCheckingAccount(1);
         assertThat(sut.findAllNegativeAccounts(), equalTo(new int[] {accountNumber}));
     }
 
     @Test
     public void findAllNegativeAccountNumbers_with3negativeBalance_returnsThoseAccounts() {
         int[] accountNumbers = new int[3];
-        accountNumbers[0] = (sut.addBankAccount(-1));
-        sut.addBankAccount(1);
-        accountNumbers[1] = (sut.addBankAccount(-1));
-        accountNumbers[2] = (sut.addBankAccount(-1));
-        sut.addBankAccount(1);
-        sut.addBankAccount(1);
+        accountNumbers[0] = (sut.addCheckingAccount(-1));
+        sut.addCheckingAccount(1);
+        accountNumbers[1] = (sut.addCheckingAccount(-1));
+        accountNumbers[2] = (sut.addCheckingAccount(-1));
+        sut.addCheckingAccount(1);
+        sut.addCheckingAccount(1);
         assertThat(sut.findAllNegativeAccounts(), equalTo(accountNumbers));
     }
 
     @Test
     public void findAllNegativeAccountNumbers_with0Balance_returnsEmpty() {
-        sut.addBankAccount(0);
+        sut.addCheckingAccount(0);
         assertThat(sut.findAllNegativeAccounts().length, equalTo(0));
     }
 
     @Test
     public void findMostAverageAccountNumbers_withOneExactAverage_returnsThatAccount() {
-        sut.addBankAccount(2);
-        sut.addBankAccount(-2);
-        int accountNumber = sut.addBankAccount(0);
+        sut.addCheckingAccount(2);
+        sut.addCheckingAccount(-2);
+        int accountNumber = sut.addCheckingAccount(0);
         assertThat(sut.findMostAverageAccounts(), equalTo(new int[] {accountNumber}));
     }
 
     @Test
     public void findMostAverageAccountNumbers_withTwoExactAverage_returnsBothAccounts() {
         int[] accountNumbers = new int[2];
-        sut.addBankAccount(2);
-        sut.addBankAccount(-2);
-        accountNumbers[0] = sut.addBankAccount(0);
-        accountNumbers[1] = sut.addBankAccount(0);
+        sut.addCheckingAccount(2);
+        sut.addCheckingAccount(-2);
+        accountNumbers[0] = sut.addCheckingAccount(0);
+        accountNumbers[1] = sut.addCheckingAccount(0);
         assertThat(sut.findMostAverageAccounts(), equalTo(accountNumbers));
     }
 
     @Test
     public void findMostAverageAccountNumbers_withAllAccountsSameBalance_returnsAllAccounts() {
         int[] accountNumbers = new int[4];
-        accountNumbers[0] = sut.addBankAccount(0);
-        accountNumbers[1] = sut.addBankAccount(0);
-        accountNumbers[2] = sut.addBankAccount(0);
-        accountNumbers[3] = sut.addBankAccount(0);
+        accountNumbers[0] = sut.addCheckingAccount(0);
+        accountNumbers[1] = sut.addCheckingAccount(0);
+        accountNumbers[2] = sut.addCheckingAccount(0);
+        accountNumbers[3] = sut.addCheckingAccount(0);
         assertThat(sut.findMostAverageAccounts(), equalTo(accountNumbers));
     }
 }
