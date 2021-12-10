@@ -1,20 +1,19 @@
 package com.hoja.blackjack;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Hand {
     public boolean bust = false;
-    public int totalValue;
+    public boolean natural = false;
+    public boolean stand = false;
+    public boolean active = true;
+    int totalValue;
     List<Card> hand = new ArrayList<>();
-    Deck deck = new Deck();
 
-    void draw() {
-        Card dealtCard = deck.dealCard();
+    void draw(Card dealtCard) {
         hand.add(dealtCard);
         System.out.printf("%nDealt: %s.%n", dealtCard.toString());
-        promptCurrentHand();
         calculateTotalValue();
     }
 
@@ -23,6 +22,7 @@ public class Hand {
         for (Card card : hand) {
             System.out.println(card.toString());
         }
+        System.out.printf("Current Total: %s%n", totalValue);
     }
 
     void calculateTotalValue() {
@@ -33,14 +33,26 @@ public class Hand {
             }
         }
         for (Card card : hand) {
-            if (card.isAce && (totalValue+11) < 21) {
-                totalValue += card.value;
-            } else if (card.isAce) {
-                card.value = 1;
+            if (card.isAce) {
+                if ((totalValue+11) > 21) {
+                    card.value = 1;
+                }
                 totalValue += card.value;
             }
         }
 
-        System.out.printf("Current Total: %s%n", String.valueOf(totalValue));
+        System.out.printf("New Total: %s%n", totalValue);
+
+        if (totalValue > 21) {
+            bust = true;
+            System.out.printf("BUST%n");
+        }
+    }
+
+    void determineNatural() {
+        if (totalValue == 21) {
+            System.out.printf("NATURAL!%n");
+            natural = true;
+        }
     }
 }
